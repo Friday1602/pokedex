@@ -12,30 +12,8 @@ type cliCommand struct {
 	callback    func() error
 }
 
-func main() {
-
-	commands := getCommands()
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for {
-		fmt.Println("pokedex >")
-		if !scanner.Scan() {
-			break
-		}
-
-		input := scanner.Text()
-		if commandStruct, ok := commands[input]; ok {
-			err := commandStruct.callback()
-			if err != nil {
-				fmt.Printf("Error executing command %s\n", err)
-			}
-		} else {
-			fmt.Printf("%v: command not found\n", input)
-		}
-
-	}
-
+func printPrompt() {
+	fmt.Println("pokedex >")
 }
 
 func getCommands() map[string]cliCommand {
@@ -70,4 +48,32 @@ func commandExit() error {
 	fmt.Println("Exiting the Pokedex!")
 	os.Exit(0)
 	return nil
+}
+func executeCommand(commandStruct cliCommand) {
+	err := commandStruct.callback()
+	if err != nil {
+		fmt.Printf("Error executing command %s\n", err)
+	}
+}
+func main() {
+
+	commands := getCommands()
+
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		printPrompt()
+		if !scanner.Scan() {
+			break
+		}
+
+		input := scanner.Text()
+		if commandStruct, ok := commands[input]; ok {
+			executeCommand(commandStruct)
+		} else {
+			fmt.Printf("%v: command not found\n", input)
+		}
+
+	}
+
 }
