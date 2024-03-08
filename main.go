@@ -2,7 +2,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 )
 
@@ -12,8 +15,19 @@ type cliCommand struct {
 	callback    func() error
 }
 
+// location struct for location endpoint json
+type location struct {
+	Count    int    `json:"count"`
+	Next     string `json:"next"`
+	Previous any    `json:"previous"`
+	Results  []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
+}
+
 func printPrompt() {
-	fmt.Println("pokedex >")
+	fmt.Print("pokedex >")
 }
 
 func getCommands() map[string]cliCommand {
@@ -27,6 +41,11 @@ func getCommands() map[string]cliCommand {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			description: "displays the names of 20 location areas in the Pokemon world",
+			callback:    commandMap,
 		},
 	}
 }
@@ -49,6 +68,40 @@ func commandExit() error {
 	os.Exit(0)
 	return nil
 }
+
+func commandMap() error {
+	// get from locaction endpoint and send response to res
+	resp, err := http.Get("https://pokeapi.co/api/v2/location/")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if resp.StatusCode > 299 {
+		return fmt.Errorf("response failed with status code: %d and body: %s", resp.StatusCode, body)
+	}
+	if err != nil {
+		return err
+	}
+	// create locationInfo to store data from json
+	var locationInfo location
+	err = json.Unmarshal(body, &locationInfo)
+	if err != nil {
+		return err
+	}
+	// check if data exist and print name of location
+	if len(locationInfo.Results) > 0 {
+		for _, name := range locationInfo.Results {
+			fmt.Println(name.Name)
+		}
+		return nil
+	} else {
+		fmt.Println("no location found")
+		return nil
+	}
+
+}
+
 func executeCommand(commandStruct cliCommand) {
 	err := commandStruct.callback()
 	if err != nil {
