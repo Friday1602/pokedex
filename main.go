@@ -26,6 +26,8 @@ type location struct {
 	} `json:"results"`
 }
 
+var locationInfo location
+
 func printPrompt() {
 	fmt.Print("pokedex >")
 }
@@ -46,6 +48,11 @@ func getCommands() map[string]cliCommand {
 			name:        "map",
 			description: "displays the names of 20 location areas in the Pokemon world",
 			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "displays the previous 20 location areas in the Pokemon world",
+			callback:    commandMapb,
 		},
 	}
 }
@@ -70,8 +77,13 @@ func commandExit() error {
 }
 
 func commandMap() error {
-	// get from locaction endpoint and send response to res
-	resp, err := http.Get("https://pokeapi.co/api/v2/location/")
+	pokeLocationAPI := locationInfo.Next
+	fmt.Println(locationInfo.Next)
+	if locationInfo.Previous == nil && locationInfo.Next == "" {
+		pokeLocationAPI = "https://pokeapi.co/api/v2/location/"
+	}
+	// get from locaction endpoint and send response to resp
+	resp, err := http.Get(pokeLocationAPI)
 	if err != nil {
 		return err
 	}
@@ -83,8 +95,8 @@ func commandMap() error {
 	if err != nil {
 		return err
 	}
+
 	// create locationInfo to store data from json
-	var locationInfo location
 	err = json.Unmarshal(body, &locationInfo)
 	if err != nil {
 		return err
@@ -100,6 +112,23 @@ func commandMap() error {
 		return nil
 	}
 
+}
+
+func commandMapb() error {
+	if locationInfo.Previous == nil {
+		fmt.Println("Cannot go back: you are on the first page of information")
+		return nil
+	}
+	if previousLocation, ok := locationInfo.Previous.(string); ok {
+		locationInfo.Next = previousLocation
+	} else {
+		fmt.Println("assertion fail: cannot assert previousLocation to string type")
+	}
+	err := commandMap()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func executeCommand(commandStruct cliCommand) {
