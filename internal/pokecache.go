@@ -23,6 +23,7 @@ func NewCache() *Cache {
 
 func (c *Cache) Add(key string, val []byte) {
 	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.store[key] = cacheEntry{
 		createAt: time.Now(),
 		val:      val,
