@@ -3,9 +3,10 @@ package main
 import "fmt"
 
 type cliCommand struct {
-	name        string
-	description string
-	callback    func() error
+	name            string
+	description     string
+	callback        func() error
+	callbackWithArg func(string) error
 }
 
 func printPrompt() {
@@ -34,12 +35,21 @@ func getCommands() map[string]cliCommand {
 			description: "displays the previous 20 location areas in the Pokemon world",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:            "explore",
+			description:     "explore the pokemon in the specific location",
+			callback:        nil,
+			callbackWithArg: commandExplore,
+		},
 	}
 }
 
-func executeCommand(commandStruct cliCommand) {
-	err := commandStruct.callback()
-	if err != nil {
-		fmt.Printf("Error executing command %s\n", err)
+func executeCommand(commandStruct cliCommand, arg string) {
+	if arg == "" {
+		err := commandStruct.callback()
+		if err != nil {
+			fmt.Printf("Error executing command %s\n", err)
+		}
 	}
+
 }

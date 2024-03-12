@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -19,8 +20,14 @@ func main() {
 		}
 
 		input := scanner.Text()
-		if commandStruct, ok := commands[input]; ok {
-			executeCommand(commandStruct)
+		parts := strings.Fields(input)
+		var arg string
+		if len(parts) > 1 {
+			arg = parts[1]
+		}
+	
+		if commandStruct, ok := commands[parts[0]]; ok {
+			executeCommand(commandStruct, arg)
 		} else {
 			fmt.Printf("%v: command not found\n", input)
 		}
