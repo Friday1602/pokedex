@@ -15,10 +15,14 @@ type Cache struct {
 	mu    sync.Mutex
 }
 
-func NewCache() *Cache {
-	return &Cache{
+// receive interval to remove cache with live longer than the interval
+func NewCache(interval time.Duration) *Cache {
+	newCache := &Cache{
 		store: make(map[string]cacheEntry),
 	}
+
+	go newCache.reapLoop(interval)
+	return newCache
 }
 
 func (c *Cache) Add(key string, val []byte) {
@@ -39,9 +43,16 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 
 }
 
-func (c *Cache) reapLoop() {
-	time.Sleep(5 * time.Second)
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	delete(c.store, "a")
+func (c *Cache) reapLoop(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	for range ticker.C {
+		c.mu.Lock()
+		for key, value := range c.store {
+			if time.Since(value.createAt) > time.Duration(interval) {
+				delete(c.store, key)
+			}
+		}
+		c.mu.Unlock()
+	}
+
 }

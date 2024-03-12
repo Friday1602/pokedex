@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	pokecache "github.com/friday1602/pokedex/internal"
 )
@@ -21,7 +22,7 @@ type location struct {
 }
 
 var locationInfo location
-var cache = pokecache.NewCache()
+var cache = pokecache.NewCache(5 * time.Second)
 
 func commandMap() error {
 	// check if Map is on the first page
