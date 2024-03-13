@@ -3,8 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
+	pokecache "github.com/friday1602/pokedex/internal"
 )
 
+// struct of location area endpoint
 type locationArea struct {
 	EncounterMethodRates []struct {
 		EncounterMethod struct {
@@ -59,15 +63,30 @@ type locationArea struct {
 }
 
 var pokeLocationArea locationArea
+var encounterCache = pokecache.NewCache(10 * time.Second)
 
+// explore location(arg) print out encounter pokemon in that location
 func commandExplore(arg ...string) error {
-	fmt.Println(arg)
+	// create val of API we want to request
 	pokeEncounterAPI := "https://pokeapi.co/api/v2/location-area/" + arg[0]
-	fmt.Println(pokeEncounterAPI)
+
+	// check if there is data in the cache, print out data from cache and return
+	if pokeEncounterCacheData, ok := encounterCache.Get(pokeEncounterAPI); ok {
+		fmt.Println("Data from cache >>>>")
+		err := printPokeEncounter(pokeEncounterCacheData)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+
+	// data not in cache so read from API directly store to cache and print out data
 	body, err := readFromAPI(pokeEncounterAPI)
 	if err != nil {
 		return err
 	}
+	encounterCache.Add(pokeEncounterAPI, body)
 	err = printPokeEncounter(body)
 	if err != nil {
 		return err

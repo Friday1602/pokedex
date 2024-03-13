@@ -31,7 +31,7 @@ func commandMap(arg ...string) error {
 
 	// check if data is already in cache.
 	if cacheData, ok := cache.Get(pokeLocationAPI); ok {
-		fmt.Println("get data from cache: ")
+		fmt.Println("Data from cache >>>>")
 		err := printLocation(cacheData)
 		if err != nil {
 			return err
