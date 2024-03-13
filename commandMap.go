@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
 	pokecache "github.com/friday1602/pokedex/internal"
@@ -24,11 +22,11 @@ type location struct {
 var locationInfo location
 var cache = pokecache.NewCache(5 * time.Second)
 
-func commandMap() error {
+func commandMap(arg ...string) error {
 	// check if Map is on the first page
 	pokeLocationAPI := locationInfo.Next
 	if locationInfo.Previous == nil && locationInfo.Next == "" {
-		pokeLocationAPI = "https://pokeapi.co/api/v2/location/"
+		pokeLocationAPI = "https://pokeapi.co/api/v2/location-area/"
 	}
 
 	// check if data is already in cache.
@@ -41,20 +39,11 @@ func commandMap() error {
 		return nil
 	}
 
-	// data not in cache, make API request
-	// get from locaction endpoint and send response to resp
-	resp, err := http.Get(pokeLocationAPI)
+	body, err := readFromAPI(pokeLocationAPI)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if resp.StatusCode > 299 {
-		return fmt.Errorf("response failed with status code: %d and body: %s", resp.StatusCode, body)
-	}
-	if err != nil {
-		return err
-	}
+
 	// store data in cache
 	cache.Add(pokeLocationAPI, body)
 	//process and print data loction
@@ -65,7 +54,7 @@ func commandMap() error {
 	return nil
 }
 
-func commandMapb() error {
+func commandMapb(arg ...string) error {
 	if locationInfo.Previous == nil {
 		fmt.Println("Cannot go back: you are on the first page of information")
 		return nil

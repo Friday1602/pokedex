@@ -1,12 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
 
 type cliCommand struct {
-	name            string
-	description     string
-	callback        func() error
-	callbackWithArg func(string) error
+	name        string
+	description string
+	callback    func(...string) error
 }
 
 func printPrompt() {
@@ -36,20 +39,36 @@ func getCommands() map[string]cliCommand {
 			callback:    commandMapb,
 		},
 		"explore": {
-			name:            "explore",
-			description:     "explore the pokemon in the specific location",
-			callback:        nil,
-			callbackWithArg: commandExplore,
+			name:        "explore",
+			description: "explore the pokemon in the specific location",
+			callback:    commandExplore,
 		},
 	}
 }
 
 func executeCommand(commandStruct cliCommand, arg string) {
-	if arg == "" {
-		err := commandStruct.callback()
-		if err != nil {
-			fmt.Printf("Error executing command %s\n", err)
-		}
+	err := commandStruct.callback(arg)
+	if err != nil {
+		fmt.Printf("Error executing command %s\n", err)
+
 	}
 
+}
+
+// data not in cache, make API request
+// get from locaction endpoint and send response to resp
+func readFromAPI(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if resp.StatusCode > 299 {
+		return nil, fmt.Errorf("response failed with status code: %d and body: %s", resp.StatusCode, body)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
 }
