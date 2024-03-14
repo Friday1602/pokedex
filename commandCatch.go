@@ -1,6 +1,10 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"math/rand"
+)
 
 var targetPokemon pokemon
 
@@ -15,5 +19,15 @@ func commandCatch(arg ...string) error {
 	if err != nil {
 		return err
 	}
+
+	index := rand.Float64() * float64(targetPokemon.BaseExperience)
+
+	switch {
+	case index < 50:
+		fmt.Println("You've caught ", targetPokemon.Name)
+	default:
+		fmt.Println("Catch failed")
+	}
+
 	return nil
 }
