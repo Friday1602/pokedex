@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 var targetPokemon pokemon
@@ -21,12 +22,13 @@ func commandCatch(arg ...string) error {
 	}
 
 	index := rand.Float64() * float64(targetPokemon.BaseExperience)
-
+	fmt.Println("Throwing a Pokeball at ", targetPokemon.Name, "...")
+	time.Sleep(3 * time.Second)
 	switch {
 	case index < 50:
-		fmt.Println("You've caught ", targetPokemon.Name)
+		fmt.Println(targetPokemon.Name, " was caught")
 	default:
-		fmt.Println("Catch failed")
+		fmt.Println(targetPokemon.Name, " escaped!")
 	}
 
 	return nil
