@@ -11,6 +11,7 @@ import (
 
 var targetPokemon pokemon
 var pokedexCache = pokecache.NewCache(1 * time.Hour)
+var caughtPokemon []string
 
 func commandCatch(arg ...string) error {
 	pokemonAPI := "https://pokeapi.co/api/v2/pokemon/" + arg[0]
@@ -29,6 +30,7 @@ func commandCatch(arg ...string) error {
 	time.Sleep(3 * time.Second)
 	switch {
 	case index < 75:
+		caughtPokemon = append(caughtPokemon, targetPokemon.Name)
 		fmt.Println(targetPokemon.Name, " was caught")
 		pokedexCache.Add(pokemonAPI, body)
 	default:
