@@ -28,7 +28,7 @@ func commandCatch(arg ...string) error {
 	fmt.Println("Throwing a Pokeball at ", targetPokemon.Name, "...")
 	time.Sleep(3 * time.Second)
 	switch {
-	case index < 50:
+	case index < 75:
 		fmt.Println(targetPokemon.Name, " was caught")
 		pokedexCache.Add(pokemonAPI, body)
 	default:

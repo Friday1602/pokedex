@@ -27,7 +27,13 @@ func printPokemonInfo(body []byte) error {
 	fmt.Printf("Height: %d\n", targetPokemon.Height)
 	fmt.Printf("Weight: %d\n", targetPokemon.Weight)
 	fmt.Println("Stats:")
-	fmt.Printf("\t-hp: %d", targetPokemon.Stats[0].BaseStat)
+	for _, stat := range targetPokemon.Stats {
+		fmt.Printf("  -%s: %d\n", stat.Stat.Name, stat.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, pokeType := range targetPokemon.Types {
+		fmt.Printf("  -%s\n", pokeType.Type.Name)
+	}
 
 	return nil
 }
